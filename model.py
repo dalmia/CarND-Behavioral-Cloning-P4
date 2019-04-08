@@ -7,6 +7,7 @@ from keras.models import Sequential, Model
 from keras.layers import Flatten, Dense, Lambda
 from keras.applications.vgg16 import VGG16
 from keras.preprocessing.image import ImageDataGenerator
+from keras.optimizers import Adam
 
 root = 'data'
 image_path = join(root, 'IMG')
@@ -14,6 +15,7 @@ log_path = join(root, 'driving_log.csv')
 
 NUM_EPOCHS = 7
 BATCH_SIZE = 4
+LR =  1e-4
 
 print('Creating dataset...')
 with open(log_path, 'r') as f:
@@ -37,7 +39,7 @@ if not exists(images_save_path) or not exists(targets_save_path):
 		image = cv2.imread(center_image_path)
 		images.append(image)
 
-		steering_angle = float(line[4])
+		steering_angle = float(line[3])
 		targets.append(steering_angle)
 
 	X_train = np.array(images)
@@ -68,7 +70,8 @@ out = Dense(4096, activation='relu')(out)
 out = Dense(1)(out)
 
 model = Model(base_model.input, out)
-model.compile(loss='mse', optimizer='adam')
+optimizer = Adam(lr=LR)
+model.compile(loss='mse', optimizer=optimizer)
 
 print('Training...')
 model.fit_generator(datagen.flow(X_train, y_train, batch_size=BATCH_SIZE), 
